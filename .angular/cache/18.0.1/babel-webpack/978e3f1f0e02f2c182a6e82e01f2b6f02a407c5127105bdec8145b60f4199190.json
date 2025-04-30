@@ -1,0 +1,1 @@
+{"ast":null,"code":"export * from '@firebase/database';","map":{"version":3,"names":[],"sources":["E:/Golden Panda/8) Programacion/MisDeberes/misDeberes/node_modules/firebase/database/dist/esm/index.esm.js"],"sourcesContent":["export * from '@firebase/database';\n"],"mappings":"AAAA,cAAc,oBAAoB","ignoreList":[]},"metadata":{},"sourceType":"module","externalDependencies":[]}
