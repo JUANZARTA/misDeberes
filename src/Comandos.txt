@@ -8,29 +8,3 @@ ng build --configuration production
 
 # Publica el contenido de 'dist/miCartera' directamente al branch 'gh-pages' de GitHub
 npx angular-cli-ghpages --dir=dist/misDeberes
-
-
-#PROMPT 1
-te dare informacion para poder qe entres en contexto y me ayude con mis peticiones
-
-unicamente me daras lo que te pida, no me des sugerencias, no me des retroalimentacion de lo que yo te pase,  no necesito que me digas que te pase, unicamente me diras "si señor, entendido" o si tienes preguntas me las haras de forma rapida o directa.  ahora si te paso archivos me devuelves metodos competos comentadors arriba, es decir: "//metodo para x motivo" si hay mas cambios sera archivos completos para copiar y pegar, NO para descargar.
-
-ahora revisa el proyecto para comenzar
-
-
-
-#PROMPT 2
-
-te dare lka descripion de la logica de la app:
-
-el enfoque del login y los usuarios es basecamente lo mismo a la app "MiCartera" que usaremos de ejemplo para crear esta (en su momento te compartire el diseño para guiarnos), ahora la persona se loguea, despues de eso eligue el año y el mes tal como en mi "MiCartera" posterior a esto, existe un boton cuadrado para agregar tipo de tarea por asi decirlo de este modo alcrearlo apareceran, consecutivamente la cantidad que cree, (tendra, editar, eliminar)
-dentro de cada tipo de debere exitira una tabla con las tareas, cda columna sera con su su respectivo nombre del tipo de tarea en el cual estemos. Aqui tendremos un crud completo de Tareas. (lo trabajaremos en ingles pero los comentarios en español y debe estar todo el codigo comentado)
-
-Nota adiconal
-fecha (en el campo fecha, debera ser una seleccion de fecha, pero en la tabal nos limitamos a mostrar el dia, sin el año o la fecha
-si no se pone el datop, es decir si se ignora porque el campo es opcional, entonce en la taba dira "Por definir")
-estado (contara con los siguiente estads {realizado, pendiente, no realizado, para hoy} )
-aciones (donde ira el boton de editar, y elimnar tal como en mi cartera)
-en el header abra un boton para regresar, para el home
-el home es la parte que tiene, los tipos de deberes
-tienes alguna duda?
