@@ -1,0 +1,78 @@
+<!-- Vista de tipos de tarea -->
+<div class="p-6 w-full">
+  <div class="flex flex-wrap gap-4">
+    <div *ngFor="let taskType of taskTypes"
+      class="bg-white rounded-lg shadow-md p-4 w-64 h-[160px] flex flex-col justify-between items-center">
+      <h3 class="text-lg font-semibold">{{ taskType.nombre }}</h3>
+
+      <!-- Sección inferior con botón e íconos -->
+      <div class="flex items-center justify-between w-full gap-2">
+        <button class="bg-teal-600 text-white py-1 px-3 rounded hover:bg-teal-700 transition flex-1"
+                (click)="enterTaskType(taskType)">INGRESAR</button>
+        <button (click)="openEditModal(taskType)" class="text-sky-700 text-xl">
+          <span class="material-icons text-sky-700">edit</span>
+        </button>
+        <button (click)="openDeleteModal(taskType)" class="text-orange-600 text-xl">
+          <span class="material-icons text-orange-600">delete</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Botón para agregar nuevo tipo de tarea -->
+    <div
+      class="bg-green-500 text-white w-64 h-[160px] rounded-lg flex items-center justify-center cursor-pointer text-4xl"
+      (click)="openModal()">
+      +
+    </div>
+  </div>
+</div>
+
+<!-- Modal para nuevo tipo de tarea -->
+<div *ngIf="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-40">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+    <h2 class="text-xl font-bold mb-4">Nuevo Tipo de Tarea</h2>
+    <label class="block mb-2">Nombre:</label>
+    <input type="text" [(ngModel)]="newTaskType" class="w-full p-2 border rounded mb-4" />
+    <div class="flex justify-end gap-2">
+      <button (click)="closeModal()" class="px-4 py-2 border rounded-md">Cancelar</button>
+      <button (click)="addTaskType()" class="px-4 py-2 bg-green-500 text-white rounded-md">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para editar tipo de tarea -->
+<div *ngIf="isEditModalOpen" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+    <h2 class="text-xl font-bold mb-4">Editar Tipo de Tarea</h2>
+    <p class="text-gray-600 mb-4 text-sm">Modifica el nombre del tipo de tarea.</p>
+
+    <label class="block mb-2 font-semibold">Nuevo Nombre:</label>
+    <input type="text" [(ngModel)]="editedTaskType" placeholder="Ej: Universidad"
+      class="w-full p-2 border rounded-md mb-4" />
+
+    <div class="flex justify-end gap-2">
+      <button (click)="closeEditModal()"
+        class="px-4 py-2 border rounded-md bg-white hover:bg-slate-200">Cancelar</button>
+      <button (click)="saveTaskTypeEdit()" class="px-4 py-2 bg-sky-700 text-white rounded-md hover:bg-sky-800">
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para eliminar tipo de tarea -->
+<div *ngIf="isDeleteModalOpen" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+    <span class="material-icons text-red-600 mx-auto mb-4" style="font-size: 48px;">
+      report_problem
+    </span>
+    <h2 class="text-xl font-bold mt-4 mb-2">¿Eliminar Tipo de Tarea?</h2>
+    <p class="mb-6 text-gray-700">¿Estás seguro de eliminar este tipo de tarea? Esta acción no se puede deshacer.</p>
+    <div class="flex justify-center gap-2">
+      <button (click)="closeDeleteModal()" class="px-4 py-2 border rounded-md hover:bg-orange-200">Cancelar</button>
+      <button (click)="confirmDeleteTaskType()" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-red-600">
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,169 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError, forkJoin, of } from 'rxjs';
+import { catchError, tap, map, switchMap } from 'rxjs/operators';
+
+export interface Notificacion {
+  mensaje: string;
+  leido: boolean;
+  fecha: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private apiKey = 'AIzaSyCXaTov5g6_qWHoxHdI39tLzEH7VQx5ttw';
+  private baseUrl = 'https://identitytoolkit.googleapis.com/v1/accounts';
+  private dbUrl = 'https://misdeberes-fac01-default-rtdb.firebaseio.com'; // Reemplaza si tu URL es otra
+
+  constructor(private http: HttpClient) {}
+
+  login(email: string, password: string): Observable<any> {
+    const url = `${this.baseUrl}:signInWithPassword?key=${this.apiKey}`;
+    const body = { email, password, returnSecureToken: true };
+
+    return this.http.post(url, body).pipe(
+      tap((res: any) => localStorage.setItem('user', JSON.stringify(res))),
+      catchError(err => throwError(() => err.error.error.message))
+    );
+  }
+
+  logout() {
+    localStorage.removeItem('user');
+    localStorage.removeItem('selectedYear');
+    localStorage.removeItem('selectedMonth');
+  }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('user');
+  }
+  
+  getUser() {
+    const data = localStorage.getItem('user');
+    if (!data) return null;
+
+    const parsed = JSON.parse(data);
+
+    // 🔧 Soporte para sesiones que todavía tienen localId
+    return {
+      id: parsed.id || parsed.localId,
+      email: parsed.email
+    };
+  }
+
+
+
+  register(email: string, password: string): Observable<any> {
+    const url = `${this.baseUrl}:signUp?key=${this.apiKey}`;
+    const body = { email, password, returnSecureToken: true };
+
+    return this.http.post(url, body).pipe(
+      tap((res: any) => localStorage.setItem('user', JSON.stringify(res))),
+      catchError(err => throwError(() => err.error.error.message))
+    );
+  }
+
+  saveUserProfile(userId: string, name: string, correo: string): Observable<any> {
+    const url = `${this.dbUrl}/${userId}.json`;
+
+    return this.http.put(url, {
+      nombre: name,
+      correo: correo,
+      notificaciones: {
+        "-notif1": {
+          mensaje: "Bienvenido a MisDeberes",
+          leido: false,
+          fecha: new Date().toLocaleString()
+        }
+      }
+    }).pipe(
+      tap(() => {
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        storedUser.name = name;
+        localStorage.setItem('user', JSON.stringify(storedUser));
+      }),
+      catchError(() => throwError(() => 'Error al guardar perfil'))
+    );
+  }
+
+  getUserData(uid: string): Observable<any> {
+    const url = `${this.dbUrl}/${uid}.json`;
+    return this.http.get<any>(url);
+  }
+
+  getUserNotifications(uid: string): Observable<Record<string, Notificacion>> {
+    const url = `${this.dbUrl}/${uid}/notificaciones.json`;
+    return this.http.get<Record<string, Notificacion>>(url);
+  }
+
+  markNotificationAsRead(uid: string, notifId: string): Observable<any> {
+    const url = `${this.dbUrl}/${uid}/notificaciones/${notifId}/leido.json`;
+    return this.http.put(url, true);
+  }
+
+  addNotification(uid: string, mensaje: string): Observable<any> {
+    const notificacionesUrl = `${this.dbUrl}/${uid}/notificaciones.json`;
+
+    return this.getUserNotifications(uid).pipe(
+      switchMap((data) => {
+        const allNotifs = data ? Object.entries(data) : [];
+        const total = allNotifs.length;
+
+        if (total >= 20) {
+          const sorted = allNotifs.sort((a, b) =>
+            new Date(a[1].fecha).getTime() - new Date(b[1].fecha).getTime()
+          );
+          const oldestKey = sorted[0][0];
+
+          const deleteUrl = `${this.dbUrl}/${uid}/notificaciones/${oldestKey}.json`;
+          return this.http.delete(deleteUrl).pipe(
+            switchMap(() => {
+              return this.http.post(notificacionesUrl, {
+                mensaje,
+                leido: false,
+                fecha: new Date().toLocaleString()
+              });
+            })
+          );
+        } else {
+          return this.http.post(notificacionesUrl, {
+            mensaje,
+            leido: false,
+            fecha: new Date().toLocaleString()
+          });
+        }
+      })
+    );
+  }
+
+  cleanOldNotifications(uid: string): Observable<any> {
+    return this.getUserNotifications(uid).pipe(
+      switchMap((data) => {
+        if (!data) return of(null);
+
+        const now = new Date();
+        const deletions = Object.entries(data)
+          .filter(([_, notif]) => {
+            const fecha = new Date(notif.fecha);
+            const diffDays = Math.floor((now.getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24));
+            return diffDays >= 7;
+          })
+          .map(([key]) => {
+            const delUrl = `${this.dbUrl}/${uid}/notificaciones/${key}.json`;
+            return this.http.delete(delUrl);
+          });
+
+        return deletions.length > 0 ? forkJoin(deletions) : of(null);
+      })
+    );
+  }
+
+  // Método para guardar sesión local del usuario autenticado
+guardarSesion(userId: string, email: string): void {
+  localStorage.setItem('user', JSON.stringify({
+    id: userId,
+    email
+  }));
+}
+}
