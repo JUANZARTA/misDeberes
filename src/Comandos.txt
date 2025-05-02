@@ -7,7 +7,7 @@ ng build --configuration production
 
 
 # Publica el contenido de 'dist/miCartera' directamente al branch 'gh-pages' de GitHub
-npx angular-cli-ghpages --dir=dist/miCartera
+npx angular-cli-ghpages --dir=dist/misDeberes
 
 
 #PROMPT 1
