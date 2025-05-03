@@ -57,7 +57,7 @@ export class TaskService {
     if (!path || !tarea?.nombre)
       return throwError(() => new Error('Datos inválidos'));
 
-    const nombreKey = tarea.nombre.trim().toLowerCase().replace(/\s+/g, '_');
+    const nombreKey = tarea.nombre.trim().toLowerCase().replace(/\s+/g, ' ');
     const url = `${path}.json`;
 
     return this.http.patch(url, {
