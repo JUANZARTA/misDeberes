@@ -9,24 +9,40 @@
       <div class="mb-6">
         <label for="email" class="block text-gray-600 text-sm font-semibold">Correo Electrónico</label>
         <input type="email" id="email" formControlName="email"
-               class="w-full px-4 py-3 mt-2 border rounded-lg focus:ring focus:ring-blue-300"
-               [ngClass]="{'border-red-500': isInvalid('email')}">
+          class="w-full px-4 py-3 mt-2 border rounded-lg focus:ring focus:ring-blue-300"
+          [ngClass]="{'border-red-500': isInvalid('email')}">
         <p *ngIf="isInvalid('email')" class="text-red-500 text-xs mt-1">Correo inválido.</p>
       </div>
 
       <!-- Contraseña -->
-      <div class="mb-6">
+      <div class="mb-6 relative">
         <label for="password" class="block text-gray-600 text-sm font-semibold">Contraseña</label>
-        <input type="password" id="password" formControlName="password"
-               class="w-full px-4 py-3 mt-2 border rounded-lg focus:ring focus:ring-blue-300"
-               [ngClass]="{'border-red-500': isInvalid('password')}">
+        <input [type]="showPassword ? 'text' : 'password'" id="password" formControlName="password"
+          class="w-full px-4 py-3 mt-2 border rounded-lg focus:ring focus:ring-blue-300 pr-10"
+          [ngClass]="{'border-red-500': isInvalid('password')}">
+        <button type="button" (click)="togglePasswordVisibility()"
+          class="absolute right-3 top-10 text-gray-500 focus:outline-none">
+          <span class="material-icons">
+            {{ showPassword ? 'visibility_off' : 'visibility' }}
+          </span>
+        </button>
         <p *ngIf="isInvalid('password')" class="text-red-500 text-xs mt-1">Debe tener al menos 6 caracteres.</p>
       </div>
 
+
       <!-- Botón de Iniciar Sesión -->
       <button type="submit" [disabled]="loginForm.invalid"
-              class="w-full bg-blue-500 text-white py-3 rounded-lg shadow-md hover:bg-blue-600 transition disabled:opacity-50">
+        class="w-full bg-blue-500 text-white py-3 rounded-lg shadow-md hover:bg-blue-600 transition disabled:opacity-50">
         Iniciar Sesión
+      </button>
+
+      <!-- Botón de Iniciar Sesión con Google -->
+      <button type="button" (click)="onLoginWithGoogle()"
+        class="w-full bg-white text-black border border-gray-300 py-3 rounded-full shadow-md hover:bg-gray-100 transition mt-4 flex items-center justify-center gap-3">
+
+        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" class="w-6 h-6">
+
+        <span class="font-semibold">Iniciar sesión con Google</span>
       </button>
 
       <!-- Enlace a Registro -->
@@ -45,13 +61,16 @@
     <div class="flex justify-center mb-4">
       <div class="w-16 h-16 flex items-center justify-center bg-red-100 rounded-full">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3-10a1 1 0 00-1.414-1.414L10 8.586 8.414 7A1 1 0 007 8.414L8.586 10 7 11.586A1 1 0 108.414 13L10 11.414l1.586 1.586A1 1 0 1013 11.586L11.414 10 13 8.414A1 1 0 0013 8z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3-10a1 1 0 00-1.414-1.414L10 8.586 8.414 7A1 1 0 007 8.414L8.586 10 7 11.586A1 1 0 108.414 13L10 11.414l1.586 1.586A1 1 0 1013 11.586L11.414 10 13 8.414A1 1 0 0013 8z"
+            clip-rule="evenodd" />
         </svg>
       </div>
     </div>
     <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Error en Inicio de Sesión</h3>
     <p class="text-gray-600 text-center">{{ errorMessage }}</p>
-    <button (click)="closeModal()" class="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition">
+    <button (click)="closeModal()"
+      class="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition">
       Cerrar
     </button>
   </div>
@@ -63,7 +82,9 @@
     <div class="flex justify-center mb-4">
       <div class="w-16 h-16 flex items-center justify-center bg-green-100 rounded-full">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 000 16zm3-10l-4 4-2-2a1 1 0 00-1.414 1.414L10 14l5-5a1 1 0 00-1.414-1.414z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 000 16zm3-10l-4 4-2-2a1 1 0 00-1.414 1.414L10 14l5-5a1 1 0 00-1.414-1.414z"
+            clip-rule="evenodd" />
         </svg>
       </div>
     </div>

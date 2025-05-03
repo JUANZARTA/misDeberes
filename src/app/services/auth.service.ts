@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { catchError, tap, map, switchMap } from 'rxjs/operators';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 
 export interface Notificacion {
   mensaje: string;
@@ -10,7 +12,7 @@ export interface Notificacion {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiKey = 'AIzaSyCXaTov5g6_qWHoxHdI39tLzEH7VQx5ttw';
@@ -25,7 +27,7 @@ export class AuthService {
 
     return this.http.post(url, body).pipe(
       tap((res: any) => localStorage.setItem('user', JSON.stringify(res))),
-      catchError(err => throwError(() => err.error.error.message))
+      catchError((err) => throwError(() => err.error.error.message))
     );
   }
 
@@ -38,7 +40,7 @@ export class AuthService {
   isLoggedIn(): boolean {
     return !!localStorage.getItem('user');
   }
-  
+
   getUser() {
     const data = localStorage.getItem('user');
     if (!data) return null;
@@ -48,11 +50,9 @@ export class AuthService {
     // 🔧 Soporte para sesiones que todavía tienen localId
     return {
       id: parsed.id || parsed.localId,
-      email: parsed.email
+      email: parsed.email,
     };
   }
-
-
 
   register(email: string, password: string): Observable<any> {
     const url = `${this.baseUrl}:signUp?key=${this.apiKey}`;
@@ -60,31 +60,37 @@ export class AuthService {
 
     return this.http.post(url, body).pipe(
       tap((res: any) => localStorage.setItem('user', JSON.stringify(res))),
-      catchError(err => throwError(() => err.error.error.message))
+      catchError((err) => throwError(() => err.error.error.message))
     );
   }
 
-  saveUserProfile(userId: string, name: string, correo: string): Observable<any> {
+  saveUserProfile(
+    userId: string,
+    name: string,
+    correo: string
+  ): Observable<any> {
     const url = `${this.dbUrl}/${userId}.json`;
 
-    return this.http.put(url, {
-      nombre: name,
-      correo: correo,
-      notificaciones: {
-        "-notif1": {
-          mensaje: "Bienvenido a MisDeberes",
-          leido: false,
-          fecha: new Date().toLocaleString()
-        }
-      }
-    }).pipe(
-      tap(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        storedUser.name = name;
-        localStorage.setItem('user', JSON.stringify(storedUser));
-      }),
-      catchError(() => throwError(() => 'Error al guardar perfil'))
-    );
+    return this.http
+      .put(url, {
+        nombre: name,
+        correo: correo,
+        notificaciones: {
+          '-notif1': {
+            mensaje: 'Bienvenido a MisDeberes',
+            leido: false,
+            fecha: new Date().toLocaleString(),
+          },
+        },
+      })
+      .pipe(
+        tap(() => {
+          const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+          storedUser.name = name;
+          localStorage.setItem('user', JSON.stringify(storedUser));
+        }),
+        catchError(() => throwError(() => 'Error al guardar perfil'))
+      );
   }
 
   getUserData(uid: string): Observable<any> {
@@ -111,8 +117,9 @@ export class AuthService {
         const total = allNotifs.length;
 
         if (total >= 20) {
-          const sorted = allNotifs.sort((a, b) =>
-            new Date(a[1].fecha).getTime() - new Date(b[1].fecha).getTime()
+          const sorted = allNotifs.sort(
+            (a, b) =>
+              new Date(a[1].fecha).getTime() - new Date(b[1].fecha).getTime()
           );
           const oldestKey = sorted[0][0];
 
@@ -122,7 +129,7 @@ export class AuthService {
               return this.http.post(notificacionesUrl, {
                 mensaje,
                 leido: false,
-                fecha: new Date().toLocaleString()
+                fecha: new Date().toLocaleString(),
               });
             })
           );
@@ -130,7 +137,7 @@ export class AuthService {
           return this.http.post(notificacionesUrl, {
             mensaje,
             leido: false,
-            fecha: new Date().toLocaleString()
+            fecha: new Date().toLocaleString(),
           });
         }
       })
@@ -146,7 +153,9 @@ export class AuthService {
         const deletions = Object.entries(data)
           .filter(([_, notif]) => {
             const fecha = new Date(notif.fecha);
-            const diffDays = Math.floor((now.getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24));
+            const diffDays = Math.floor(
+              (now.getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24)
+            );
             return diffDays >= 7;
           })
           .map(([key]) => {
@@ -160,10 +169,41 @@ export class AuthService {
   }
 
   // Método para guardar sesión local del usuario autenticado
-guardarSesion(userId: string, email: string): void {
-  localStorage.setItem('user', JSON.stringify({
-    id: userId,
-    email
-  }));
-}
+  guardarSesion(userId: string, email: string): void {
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        id: userId,
+        email,
+      })
+    );
+  }
+
+  // Método para iniciar sesión con Google
+  loginWithGoogle(): void {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithRedirect(provider);
+  }
+
+  // Método para obtener el token de Firebase
+  startAutoLogout(): void {
+    let timer: any;
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        this.logout();
+        // window.location.href = '/miCartera/login'; // Redirigir al login
+        window.location.href = `${document.baseURI}login`;
+
+      }, 2 * 60 * 1000); // 2 minutos
+    };
+
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
+    window.addEventListener('click', resetTimer);
+    window.addEventListener('touchstart', resetTimer);
+
+    resetTimer(); // Iniciar temporizador al entrar
+  }
 }

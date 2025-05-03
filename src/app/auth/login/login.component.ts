@@ -1,22 +1,29 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { DateService } from '../../services/date.service';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private authService = inject(AuthService);
   private dateService = inject(DateService);
+  showPassword: boolean = false;
 
   loginForm: FormGroup;
   showModal = false;
@@ -27,14 +34,32 @@ export class LoginComponent implements OnInit {
   constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
-  ngOnInit(): void {}
+// Método para capturar el resultado del login con Google y redirigir si es nuevo login
+ngOnInit(): void {
+  firebase.auth().getRedirectResult()
+    .then((result: firebase.auth.UserCredential) => {
+      if (result && result.user) {
+        this.welcomeName = result.user.displayName || 'Usuario';
+        this.showSuccessModal = true;
 
-  isInvalid(field: string): boolean {
-    return this.loginForm.controls[field].invalid && this.loginForm.controls[field].touched;
+        setTimeout(() => {
+          this.router.navigate(['app/home']);
+        }, 1000);
+      }
+    })
+    .catch((error: any) => {
+      console.error('Error en getRedirectResult:', error);
+    });
+}
+
+
+  isInvalid(controlName: string): boolean {
+    const control = this.loginForm.get(controlName);
+    return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
   onSubmit() {
@@ -51,15 +76,17 @@ export class LoginComponent implements OnInit {
 
             // ✅ Nuevas recomendaciones de ahorro
             const recomendaciones = [
-              "Reservá al menos el 10% de tus ingresos como ahorro.",
-              "Evitá gastos pequeños repetitivos, pueden sumar mucho.",
-              "Asigná metas a tus ahorros: eso te motiva más."
+              'Reservá al menos el 10% de tus ingresos como ahorro.',
+              'Evitá gastos pequeños repetitivos, pueden sumar mucho.',
+              'Asigná metas a tus ahorros: eso te motiva más.',
             ];
 
             this.authService.getUserNotifications(uid).subscribe((notifs) => {
-              const existentes = notifs ? Object.values(notifs).map((n: any) => n.mensaje) : [];
+              const existentes = notifs
+                ? Object.values(notifs).map((n: any) => n.mensaje)
+                : [];
 
-              recomendaciones.forEach(msg => {
+              recomendaciones.forEach((msg) => {
                 if (!existentes.includes(msg)) {
                   this.authService.addNotification(uid, msg).subscribe();
                 }
@@ -69,7 +96,7 @@ export class LoginComponent implements OnInit {
         },
         error: (errorMsg) => {
           this.showErrorModal(this.getFirebaseErrorMessage(errorMsg));
-        }
+        },
       });
     }
   }
@@ -106,4 +133,14 @@ export class LoginComponent implements OnInit {
         return 'Ha ocurrido un error inesperado.';
     }
   }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  // Método para iniciar sesión con Google
+  onLoginWithGoogle(): void {
+    this.authService.loginWithGoogle();
+  }
 }
+
