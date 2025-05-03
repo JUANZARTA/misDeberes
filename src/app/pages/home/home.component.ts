@@ -49,21 +49,16 @@ export class HomeComponent {
   ngOnInit(): void {
     console.log('[INIT] Home cargado');
 
-    // 🔁 Carga inicial
+    // 🔁 Carga inicial (por si aún no se ha emitido el observable)
     this.loadTaskTypes();
     this.loadTodayTasks();
 
-    // 🔁 Escuchar cambios de mes o año
-    this.dateService.selectedDate$.subscribe(() => {
-      this.loadTaskTypes();     // Actualiza cuando cambia mes/año
-      this.loadTodayTasks();    // También el resumen
-    });
+    // 🔁 Escuchar cambios de mes o año (solo una vez)
     this.dateService.selectedDate$.subscribe((fecha) => {
-      console.log('[OBS] Fecha detectada:', fecha);
-      this.loadTaskTypes();
-      this.loadTodayTasks();
+      console.log('[OBS] Fecha detectada:', fecha); // Debug
+      this.loadTaskTypes();     // Actualizar tipos de tarea
+      this.loadTodayTasks();    // Actualizar resumen diario
     });
-
   }
 
   // Consulta todos los tipos de tareas existentes
