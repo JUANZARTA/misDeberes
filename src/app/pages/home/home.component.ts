@@ -4,6 +4,9 @@ import { Router } from '@angular/router';
 import { TaskTypeService } from '../../services/taskType.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TaskService } from '../../services/task.service';
+import { Task } from '../../models/task.model';
+import { DateService } from '../../services/date.service';
 
 @Component({
   selector: 'app-home',
@@ -14,7 +17,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class HomeComponent {
   // Lista de tipos de tareas
-  taskTypes: { key: string, nombre: string }[] = [];
+  taskTypes: { key: string; nombre: string }[] = [];
 
   // Estado del modal para crear tipo
   isModalOpen = false;
@@ -31,16 +34,31 @@ export class HomeComponent {
   isDeleteModalOpen: boolean = false;
   taskTypeToDelete: string = '';
 
+  // ===[Tareas del día]===
+  todayTasks: Task[] = [];
+  todayTaskOrigins: Map<string, string> = new Map();
+
   constructor(
     private taskTypeService: TaskTypeService,
+    private taskService: TaskService,
+    private dateService: DateService,
     private router: Router
   ) {}
 
   // Carga inicial de tipos al entrar al componente
   ngOnInit(): void {
     console.log('[INIT] Home cargado');
-    this.loadTaskTypes();
+    this.loadTaskTypes(); // Cargar categorías
+
+    // 🔁 Escuchar cambios de mes o año
+    this.dateService.selectedDate$.subscribe(() => {
+      this.loadTodayTasks(); // Cargar tareas del día cada vez que se cambia mes o año
+    });
+
+    // Primer carga
+    this.loadTodayTasks();
   }
+
 
   // Consulta todos los tipos de tareas existentes
   loadTaskTypes(): void {
@@ -86,7 +104,6 @@ export class HomeComponent {
     console.log('[NAVIGATE TO]', taskType);
     this.router.navigate(['/app/category', taskType.key]);
   }
-
 
   // ------------------ MODAL DE EDICIÓN ------------------
 
@@ -137,6 +154,49 @@ export class HomeComponent {
         },
         error: (err) => console.error('[ERROR] Al eliminar tipo:', err),
       });
+    }
+  }
+
+  // ------------------ Resumen de tablas ------------------
+  loadTodayTasks(): void {
+    this.taskService.getTodayTasks().subscribe({
+      next: (tasks) => {
+        this.todayTasks = tasks;
+
+        // Mapeo de tarea → tipo de tarea (se asume que el campo lo trae, si no, se ajusta en el service)
+        this.todayTaskOrigins.clear();
+        tasks.forEach((task) => {
+          if ((task as any).tipo) {
+            this.todayTaskOrigins.set(task.nombre, (task as any).tipo);
+          }
+        });
+      },
+      error: (err) => console.error('[ERROR] Al cargar tareas del día:', err),
+    });
+  }
+
+  changeTodayTaskStatus(task: Task): void {
+    const key = task.nombre.trim().toLowerCase().replace(/\s+/g, '_');
+    const tipo = task.tipo;
+    if (!tipo) return;
+
+    this.taskService.updateTask(tipo, key, task).subscribe({
+      next: () => console.log('[UPDATE] Estado actualizado desde resumen'),
+      error: (err: unknown) =>
+        console.error('[ERROR] Al actualizar estado desde resumen:', err),
+    });
+  }
+
+  getEstadoColor(task: Task): string {
+    switch (task.estado) {
+      case 'realizado':
+        return 'bg-teal-600 text-white';
+      case 'para hoy':
+        return 'bg-orange-600 text-white';
+      case 'no realizado':
+        return 'bg-red-600 text-white';
+      default:
+        return 'bg-slate-500 text-white';
     }
   }
 }

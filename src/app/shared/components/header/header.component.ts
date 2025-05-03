@@ -10,14 +10,24 @@ import { AuthService } from '../../../services/auth.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
+  styleUrl: './header.component.css',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   showMonthModal = false;
   years: number[] = [];
   months: string[] = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
   ];
 
   selectedYear: number | null = null;
@@ -37,7 +47,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private routeSubscription?: Subscription;
   private authService = inject(AuthService);
 
-  constructor(private dateService: DateService, private router: Router) {}
+  constructor(private dateService: DateService, private router: Router,) {}
 
   ngOnInit(): void {
     this.generateYearRange(2025, 2050);
@@ -59,12 +69,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.dateService.setDate(defaultYear, defaultMonth + 1);
     }
 
-    this.dateSubscription = this.dateService.selectedDate$.subscribe(({ year, month }) => {
-      this.currentYear = year ?? '';
-      this.currentMonth = month ?? '';
-    });
+    this.dateSubscription = this.dateService.selectedDate$.subscribe(
+      ({ year, month }) => {
+        this.currentYear = year ?? '';
+        this.currentMonth = month ?? '';
+      }
+    );
 
-    this.routeSubscription = this.router.events.subscribe(event => {
+    this.routeSubscription = this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         const path = event.urlAfterRedirects.split('/');
         this.currentRoute = this.mapRouteToTitle(path[path.length - 1]);
@@ -121,17 +133,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
-
   mapRouteToTitle(route: string): string {
     switch (route) {
-      case 'expense': return 'Gastos';
-      case 'income': return 'Ingresos';
-      case 'wallet': return 'Cartera';
-      case 'saving': return 'Ahorros';
-      case 'loan': return 'Préstamos';
-      case 'debt': return 'Deudas';
-      case 'home': return 'Inicio';
-      default: return this.capitalize(route);
+      case 'expense':
+        return 'Gastos';
+      case 'income':
+        return 'Ingresos';
+      case 'wallet':
+        return 'Cartera';
+      case 'saving':
+        return 'Ahorros';
+      case 'loan':
+        return 'Préstamos';
+      case 'debt':
+        return 'Deudas';
+      case 'home':
+        return 'Inicio';
+      default:
+        return this.capitalize(route);
     }
   }
 
@@ -154,9 +173,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
       if (data) {
         this.notifications = Object.entries(data).map(([key, value]: any) => ({
           id: key,
-          ...value
+          ...value,
         }));
-        this.unreadCount = this.notifications.filter(n => !n.leido).length;
+        this.unreadCount = this.notifications.filter((n) => !n.leido).length;
       }
     });
   }
@@ -167,11 +186,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (!uid) return;
 
     this.authService.markNotificationAsRead(uid, notifId).subscribe(() => {
-      this.notifications = this.notifications.map(n => {
+      this.notifications = this.notifications.map((n) => {
         if (n.id === notifId) n.leido = true;
         return n;
       });
-      this.unreadCount = this.notifications.filter(n => !n.leido).length;
+      this.unreadCount = this.notifications.filter((n) => !n.leido).length;
     });
   }
+
+  logout(): void {
+    this.authService.logout(); // asegúrate de que este método exista
+    this.router.navigate(['/auth/login']); // o la ruta a tu pantalla de login
+  }
+
 }

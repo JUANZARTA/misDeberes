@@ -8,7 +8,7 @@
       <!-- Sección inferior con botón e íconos -->
       <div class="flex items-center justify-between w-full gap-2">
         <button class="bg-teal-600 text-white py-1 px-3 rounded hover:bg-teal-700 transition flex-1"
-                (click)="enterTaskType(taskType)">INGRESAR</button>
+          (click)="enterTaskType(taskType)">INGRESAR</button>
         <button (click)="openEditModal(taskType)" class="text-sky-700 text-xl">
           <span class="material-icons text-sky-700">edit</span>
         </button>
@@ -25,6 +25,60 @@
       +
     </div>
   </div>
+
+  <!-- ========== [Resumen de tareas del día] ========== -->
+<div class="mt-10 w-full">
+  <div class="relative flex flex-col bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+
+    <!-- Header -->
+    <div
+      class="flex items-center justify-between p-6 bg-gradient-to-r from-green-700 to-green-700 text-white rounded-t-xl shadow-md">
+      <div>
+        <h6 class="text-xl font-bold tracking-wide">Resumen de Tareas</h6>
+        <p class="text-sm flex items-center gap-2 opacity-90">
+          <strong class="text-base">Solo las asignadas para hoy</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Tabla de resumen -->
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[640px] border-collapse">
+        <thead class="bg-gray-100">
+          <tr class="border-b">
+            <th class="py-4 px-6 text-left text-xs font-semibold uppercase text-gray-600">Tipo</th>
+            <th class="py-4 px-6 text-left text-xs font-semibold uppercase text-gray-600">Nombre</th>
+            <th class="py-4 px-6 text-left text-xs font-semibold uppercase text-gray-600">Nota</th>
+            <th class="py-4 px-6 text-center text-xs font-semibold uppercase text-gray-600">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let task of todayTasks" class="border-b transition duration-300 hover:bg-gray-50">
+            <td class="py-4 px-6 font-semibold">
+              {{ todayTaskOrigins.get(task.nombre) || '-' }}
+            </td>
+            <td class="py-4 px-6 font-semibold">{{ task.nombre }}</td>
+            <td class="py-4 px-6 text-gray-700">{{ task.nota || '-' }}</td>
+            <td class="py-4 px-6 text-center">
+              <select [(ngModel)]="task.estado" (change)="changeTodayTaskStatus(task)"
+                class="text-xs font-semibold px-3 py-1 rounded-full shadow-sm border"
+                [ngClass]="getEstadoColor(task)">
+                <option class="text-black bg-slate-100" value="pendiente">Pendiente</option>
+                <option class="text-black bg-slate-100" value="realizado">Realizado</option>
+                <option class="text-black bg-slate-100" value="no realizado">No realizado</option>
+                <option class="text-black bg-slate-100" value="para hoy">Para hoy</option>
+              </select>
+            </td>
+          </tr>
+          <tr *ngIf="todayTasks.length === 0">
+            <td colspan="4" class="text-center text-gray-500 py-6">No hay tareas programadas para hoy.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <!-- Modal para nuevo tipo de tarea -->
