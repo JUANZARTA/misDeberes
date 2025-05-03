@@ -40,7 +40,7 @@ export class TaskService {
         return res
           ? Object.keys(res).map((key) => ({
               ...res[key],
-              nombre: key,
+              nombre: res[key].nombre || key, // ✅ usa el nombre limpio si existe
             }))
           : [];
       }),
@@ -57,13 +57,20 @@ export class TaskService {
     if (!path || !tarea?.nombre)
       return throwError(() => new Error('Datos inválidos'));
 
-    const nombreKey = tarea.nombre.trim().toLowerCase().replace(/\s+/g, ' ');
+    const nombreKey = tarea.nombre.trim().toLowerCase().replace(/\s+/g, '_');
     const url = `${path}.json`;
 
+    const tareaConNombreOriginal = {
+      ...tarea,
+      nombre: tarea.nombre.trim(), // 👈 nombre limpio para mostrar
+    };
+
     return this.http.patch(url, {
-      [nombreKey]: tarea,
+      [nombreKey]: tareaConNombreOriginal,
     });
   }
+
+
   // Elimina una tarea específica de una categoría
   deleteTask(taskType: string, taskKey: string): Observable<any> {
     const path = this.getPath(taskType);

@@ -65,47 +65,61 @@ export class CategoryComponent {
     this.loadTaskTypeDisplayName();
   }
 
- // Carga y ajusta estados de las tareas automáticamente
-loadTasks(): void {
-  this.taskService.getTasks(this.taskTypeName).subscribe({
-    next: (tasks) => {
-      const hoy = new Date();
-      const hoyFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()); // hoy a las 00:00
+  // Carga y ajusta estados de las tareas automáticamente
+  loadTasks(): void {
+    this.taskService.getTasks(this.taskTypeName).subscribe({
+      next: (tasks) => {
+        const hoy = new Date();
+        const hoyFecha = new Date(
+          hoy.getFullYear(),
+          hoy.getMonth(),
+          hoy.getDate()
+        ); // hoy a las 00:00
 
-      console.log('[DEBUG] Fecha actual local:', hoy.toISOString(), '| Solo fecha:', hoyFecha.toDateString());
+        console.log(
+          '[DEBUG] Fecha actual local:',
+          hoy.toISOString(),
+          '| Solo fecha:',
+          hoyFecha.toDateString()
+        );
 
-      this.tasks = tasks.map(task => {
-        if (task.estado === 'realizado') return task;
+        this.tasks = tasks.map((task) => {
+          if (task.estado === 'realizado') return task;
 
-        if (!task.fecha) {
-          task.estado = 'pendiente';
-        } else {
-          const fechaTarea = this.parseFechaLocal(task.fecha);
-          console.log('[DEBUG] Tarea:', task.nombre, '| Fecha tarea:', fechaTarea.toDateString());
-
-          if (fechaTarea.getTime() === hoyFecha.getTime()) {
-            task.estado = 'para hoy';
-          } else if (fechaTarea.getTime() < hoyFecha.getTime()) {
-            task.estado = 'no realizado';
-          } else {
+          if (!task.fecha) {
             task.estado = 'pendiente';
+          } else {
+            const fechaTarea = this.parseFechaLocal(task.fecha);
+            console.log(
+              '[DEBUG] Tarea:',
+              task.nombre,
+              '| Fecha tarea:',
+              fechaTarea.toDateString()
+            );
+
+            if (fechaTarea.getTime() === hoyFecha.getTime()) {
+              task.estado = 'para hoy';
+            } else if (fechaTarea.getTime() < hoyFecha.getTime()) {
+              task.estado = 'no realizado';
+            } else {
+              task.estado = 'pendiente';
+            }
           }
-        }
 
-        return task;
-      });
+          return task;
+        });
 
-      // Guardar los cambios en Firebase
-      this.tasks.forEach(task => {
-        const key = task.nombre.trim().toLowerCase().replace(/\s+/g, '_');
-        this.taskService.updateTask(this.taskTypeName, key, task).subscribe();
-      });
+        // Guardar los cambios en Firebase
+        this.tasks.forEach((task) => {
+          const key = task.nombre.trim().toLowerCase().replace(/\s+/g, '_');
+          this.taskService.updateTask(this.taskTypeName, key, task).subscribe();
+        });
 
-      console.log('[TAREAS]', this.tasks);
-    },
-    error: (err) => console.error('[ERROR] Al cargar tareas:', err)
-  });
-}
+        console.log('[TAREAS]', this.tasks);
+      },
+      error: (err) => console.error('[ERROR] Al cargar tareas:', err),
+    });
+  }
 
   // Regresa al home
   goBack(): void {
@@ -179,12 +193,15 @@ loadTasks(): void {
       .trim()
       .toLowerCase()
       .replace(/\s+/g, '_');
+
     const oldKey = this.editedOriginalName
       .trim()
       .toLowerCase()
       .replace(/\s+/g, '_');
 
-    // Si cambió el nombre (key), eliminamos el anterior
+    // ✅ actualiza nombre visible sin "_"
+    this.editedTask.nombre = this.editedTask.nombre.trim();
+
     if (newKey !== oldKey) {
       this.taskService.deleteTask(this.taskTypeName, oldKey).subscribe();
     }
@@ -208,9 +225,10 @@ loadTasks(): void {
 
   // Abre modal de eliminación (por implementar)
   openDeleteModal(task: any): void {
-    this.taskToDeleteKey = task.nombre;
+    this.taskToDeleteKey = task.nombre.trim().toLowerCase().replace(/\s+/g, '_'); // ✅ clave real
     this.isDeleteModalOpen = true;
   }
+
   // Confirma la eliminación de la tarea seleccionada
   confirmDeleteTask(): void {
     this.taskService
@@ -223,6 +241,7 @@ loadTasks(): void {
         error: (err) => console.error('[ERROR] Al eliminar tarea:', err),
       });
   }
+
   // Cierra el modal de eliminación
   closeDeleteModal(): void {
     this.taskToDeleteKey = '';
@@ -261,9 +280,8 @@ loadTasks(): void {
   }
 
   // Parsea un string yyyy-MM-dd como fecha local sin zona horaria
-parseFechaLocal(fechaStr: string): Date {
-  const [year, month, day] = fechaStr.split('-').map(Number);
-  return new Date(year, month - 1, day); // mes va de 0-11
-}
-
+  parseFechaLocal(fechaStr: string): Date {
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    return new Date(year, month - 1, day); // mes va de 0-11
+  }
 }
