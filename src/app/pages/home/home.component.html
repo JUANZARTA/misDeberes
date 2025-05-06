@@ -2,25 +2,25 @@
 <div class="p-6 w-full">
   <div class="flex flex-wrap gap-4">
     <div *ngFor="let taskType of taskTypes"
-      class="bg-white rounded-lg shadow-md p-4 w-64 h-[160px] flex flex-col justify-between items-center">
-      <h3 class="text-lg font-semibold">{{ taskType.nombre }}</h3>
+      class="bg-white rounded-lg shadow-md p-4 w-64 h-[160px] flex flex-col justify-between items-center dark:bg-slate-700">
+      <h3 class="text-lg font-semibold ">{{ taskType.nombre }}</h3>
 
       <!-- Sección inferior con botón e íconos -->
       <div class="flex items-center justify-between w-full gap-2">
-        <button class="bg-teal-600 text-white py-1 px-3 rounded hover:bg-teal-700 transition flex-1"
+        <button class="bg-teal-600 text-white py-1 px-3 rounded hover:bg-teal-700 transition flex-1 "
           (click)="enterTaskType(taskType)">INGRESAR</button>
         <button (click)="openEditModal(taskType)" class="text-sky-700 text-xl">
           <span class="material-icons text-sky-700">edit</span>
         </button>
         <button (click)="openDeleteModal(taskType)" class="text-orange-600 text-xl">
-          <span class="material-icons text-orange-600">delete</span>
+          <span class="material-icons t ext-orange-600">delete</span>
         </button>
       </div>
     </div>
 
     <!-- Botón para agregar nuevo tipo de tarea -->
     <div
-      class="bg-green-500 text-white w-64 h-[160px] rounded-lg flex items-center justify-center cursor-pointer text-4xl"
+      class="bg-teal-600 hover:bg-teal-700 text-white w-64 h-[160px] rounded-lg flex items-center justify-center cursor-pointer text-4xl"
       (click)="openModal()">
       +
     </div>
@@ -28,11 +28,11 @@
 
   <!-- ========== [Resumen de tareas del día] ========== -->
 <div class="mt-10 w-full">
-  <div class="relative flex flex-col bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+  <div class="relative flex flex-col bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:bg-slate-700 dark:border-gray-600">
 
     <!-- Header -->
     <div
-      class="flex items-center justify-between p-6 bg-gradient-to-r from-green-700 to-green-700 text-white rounded-t-xl shadow-md">
+      class="flex items-center justify-between p-6 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-t-xl shadow-md">
       <div>
         <h6 class="text-xl font-bold tracking-wide">Resumen de Tareas</h6>
         <p class="text-sm flex items-center gap-2 opacity-90">
@@ -54,11 +54,11 @@
         </thead>
         <tbody>
           <tr *ngFor="let task of todayTasks" class="border-b transition duration-300 hover:bg-gray-50">
-            <td class="py-4 px-6 font-semibold">
+            <td class="py-4 px-6 font-bold text-teal-800 dark:text-white">
               {{ todayTaskOrigins.get(task.nombre) || '-' }}
             </td>
             <td class="py-4 px-6 font-semibold">{{ task.nombre }}</td>
-            <td class="py-4 px-6 text-gray-700">{{ task.nota || '-' }}</td>
+            <td class="py-4 px-6 text-gray-700 dark:text-white">{{ task.nota || '-' }}</td>
             <td class="py-4 px-6 text-center">
               <select [(ngModel)]="task.estado" (change)="changeTodayTaskStatus(task)"
                 class="text-xs font-semibold px-3 py-1 rounded-full shadow-sm border"

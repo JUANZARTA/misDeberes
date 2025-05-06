@@ -174,4 +174,43 @@ export class TaskService {
     );
   }
 
+  getAllTasks(): Observable<Task[]> {
+    const user = this.authService.getUser();
+    const year = this.dateService.getSelectedYear();
+    const month = this.dateService.getSelectedMonth();
+  
+    if (!user?.id || !year || !month) return of([]);
+  
+    const url = `${this.dbUrl}/${user.id}/${year}/${month}/categorias.json`;
+  
+    return this.http.get<{ [key: string]: any }>(url).pipe(
+      map((categorias) => {
+        const todasLasTareas: Task[] = [];
+  
+        if (!categorias) return [];
+  
+        Object.entries(categorias).forEach(([tipo, categoria]: [string, any]) => {
+          if (categoria?.tareas) {
+            Object.entries(categoria.tareas).forEach(([nombre, tarea]: [string, any]) => {
+              todasLasTareas.push({
+                nombre: tarea.nombre || nombre,
+                nota: tarea.nota || '',
+                fecha: tarea.fecha || '',
+                estado: tarea.estado || 'pendiente',
+                tipo: tipo // ✅ importante para categorizar luego
+              } as Task);
+            });
+          }
+        });
+  
+        return todasLasTareas;
+      }),
+      catchError((err) => {
+        console.error('[ERROR][GET ALL TASKS]', err);
+        return of([]);
+      })
+    );
+  }
+  
+
 }

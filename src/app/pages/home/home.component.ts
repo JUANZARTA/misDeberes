@@ -43,7 +43,7 @@ export class HomeComponent {
     private taskService: TaskService,
     private dateService: DateService,
     private router: Router
-  ) {}
+  ) { }
 
   // Carga inicial de tipos al entrar al componente
   ngOnInit(): void {
@@ -65,7 +65,7 @@ export class HomeComponent {
     });
 
   }
-  
+
 
   // Consulta todos los tipos de tareas existentes
   loadTaskTypes(): void {
@@ -165,22 +165,67 @@ export class HomeComponent {
   }
 
   // ------------------ Resumen de tablas ------------------
-  loadTodayTasks(): void {
-    this.taskService.getTodayTasks().subscribe({
-      next: (tasks) => {
-        this.todayTasks = tasks;
+loadTodayTasks(): void {
+  this.taskService.getAllTasks().subscribe({
+    next: (tasks) => {
+      const hoy = new Date();
+      const hoyFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
 
-        // Mapeo de tarea → tipo de tarea (se asume que el campo lo trae, si no, se ajusta en el service)
-        this.todayTaskOrigins.clear();
-        tasks.forEach((task) => {
-          if ((task as any).tipo) {
-            this.todayTaskOrigins.set(task.nombre, (task as any).tipo);
+      const tasksProcesadas = tasks.map((task) => {
+        if (task.estado === 'realizado') return task;
+
+        if (!task.fecha) {
+          task.estado = 'pendiente';
+        } else {
+          const [year, month, day] = task.fecha.split('-').map(Number);
+          const fechaTarea = new Date(year, month - 1, day);
+
+          if (fechaTarea.getTime() === hoyFecha.getTime()) {
+            task.estado = 'para hoy';
+          } else if (fechaTarea.getTime() < hoyFecha.getTime()) {
+            task.estado = 'no realizado';
+          } else {
+            task.estado = 'pendiente';
           }
-        });
-      },
-      error: (err) => console.error('[ERROR] Al cargar tareas del día:', err),
-    });
-  }
+        }
+
+        return task;
+      });
+
+      // Filtrar: solo tareas de hoy o no realizadas
+      const filtradas = tasksProcesadas.filter((task) => {
+        const [year, month, day] = task.fecha?.split('-')?.map(Number) || [];
+        const fechaTarea = new Date(year, month - 1, day);
+        return (
+          task.estado === 'no realizado' ||
+          (task.fecha && fechaTarea.getTime() === hoyFecha.getTime())
+        );
+      });
+
+      // Ordenar: primero las "no realizado"
+      this.todayTasks = filtradas.sort((a, b) => {
+        if (a.estado === 'no realizado' && b.estado !== 'no realizado') return -1;
+        if (b.estado === 'no realizado' && a.estado !== 'no realizado') return 1;
+        return 0;
+      });
+
+      // Tipo formateado
+      this.todayTaskOrigins.clear();
+      this.todayTasks.forEach((task) => {
+        if ((task as any).tipo) {
+          const rawTipo = (task as any).tipo;
+          const formattedTipo = rawTipo
+            .split('_')
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+          this.todayTaskOrigins.set(task.nombre, formattedTipo);
+        }
+      });
+    },
+    error: (err) => console.error('[ERROR] Al cargar tareas:', err),
+  });
+}
+
 
   changeTodayTaskStatus(task: Task): void {
     const key = task.nombre.trim().toLowerCase().replace(/\s+/g, '_');

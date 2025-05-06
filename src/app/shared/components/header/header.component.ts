@@ -39,6 +39,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   userName: string = ''; // Para mostrar nombre si luego se quiere
 
+  isDarkMode = false;
+
   notifications: any[] = [];
   unreadCount: number = 0;
   showNotifications: boolean = false;
@@ -47,7 +49,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private routeSubscription?: Subscription;
   private authService = inject(AuthService);
 
-  constructor(private dateService: DateService, private router: Router,) {}
+  constructor(private dateService: DateService, private router: Router,) { }
+
+  toggleDarkMode(): void {
+    this.isDarkMode = !this.isDarkMode;
+
+    const htmlElement = document.documentElement;
+    if (this.isDarkMode) {
+      htmlElement.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      htmlElement.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }
 
   ngOnInit(): void {
     this.generateYearRange(2025, 2050);
@@ -84,6 +99,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
 
     this.loadNotifications();
+    // Activar modo oscuro si estaba guardado
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode === 'true') {
+      this.isDarkMode = true;
+      document.documentElement.classList.add('dark');
+    }
+
   }
 
   ngOnDestroy(): void {
