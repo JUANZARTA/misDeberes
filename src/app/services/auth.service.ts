@@ -196,7 +196,7 @@ export class AuthService {
         // window.location.href = '/miCartera/login'; // Redirigir al login
         window.location.href = `${document.baseURI}login`;
 
-      }, 2 * 60 * 1000); // 2 minutos
+      }, 5 * 60 * 1000); // 2 minutos
     };
 
     window.addEventListener('mousemove', resetTimer);
