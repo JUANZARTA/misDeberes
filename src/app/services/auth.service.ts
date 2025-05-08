@@ -17,10 +17,11 @@ export interface Notificacion {
 export class AuthService {
   private apiKey = 'AIzaSyCXaTov5g6_qWHoxHdI39tLzEH7VQx5ttw';
   private baseUrl = 'https://identitytoolkit.googleapis.com/v1/accounts';
-  private dbUrl = 'https://misdeberes-fac01-default-rtdb.firebaseio.com'; // Reemplaza si tu URL es otra
+  private dbUrl = 'https://misdeberes-fac01-default-rtdb.firebaseio.com';
 
   constructor(private http: HttpClient) {}
 
+  //| Método para iniciar sesión con email y contraseña
   login(email: string, password: string): Observable<any> {
     const url = `${this.baseUrl}:signInWithPassword?key=${this.apiKey}`;
     const body = { email, password, returnSecureToken: true };
@@ -31,16 +32,19 @@ export class AuthService {
     );
   }
 
+  //| Método para iniciar sesión con Google
   logout() {
     localStorage.removeItem('user');
     localStorage.removeItem('selectedYear');
     localStorage.removeItem('selectedMonth');
   }
 
+  //| Método para cerrar sesión
   isLoggedIn(): boolean {
     return !!localStorage.getItem('user');
   }
 
+  //| Método para verificar si el usuario está autenticado
   getUser() {
     const data = localStorage.getItem('user');
     if (!data) return null;
@@ -54,6 +58,7 @@ export class AuthService {
     };
   }
 
+  //| Método para obtener el token de Firebase
   register(email: string, password: string): Observable<any> {
     const url = `${this.baseUrl}:signUp?key=${this.apiKey}`;
     const body = { email, password, returnSecureToken: true };
@@ -64,6 +69,7 @@ export class AuthService {
     );
   }
 
+  //| Método para guardar el perfil del usuario en la base de datos
   saveUserProfile(
     userId: string,
     name: string,
@@ -93,21 +99,25 @@ export class AuthService {
       );
   }
 
+  //| Método para obtener el perfil del usuario
   getUserData(uid: string): Observable<any> {
     const url = `${this.dbUrl}/${uid}.json`;
     return this.http.get<any>(url);
   }
 
+  //| Método para obtener el perfil del usuario por ID
   getUserNotifications(uid: string): Observable<Record<string, Notificacion>> {
     const url = `${this.dbUrl}/${uid}/notificaciones.json`;
     return this.http.get<Record<string, Notificacion>>(url);
   }
 
+  //| Método para obtener las notificaciones del usuario
   markNotificationAsRead(uid: string, notifId: string): Observable<any> {
     const url = `${this.dbUrl}/${uid}/notificaciones/${notifId}/leido.json`;
     return this.http.put(url, true);
   }
 
+  //| Método para eliminar una notificación del usuario
   addNotification(uid: string, mensaje: string): Observable<any> {
     const notificacionesUrl = `${this.dbUrl}/${uid}/notificaciones.json`;
 
@@ -144,6 +154,7 @@ export class AuthService {
     );
   }
 
+  //| Método para eliminar notificaciones antiguas (más de 7 días)
   cleanOldNotifications(uid: string): Observable<any> {
     return this.getUserNotifications(uid).pipe(
       switchMap((data) => {
