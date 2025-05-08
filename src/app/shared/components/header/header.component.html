@@ -1,12 +1,17 @@
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-6">
-  <!-- Columna izquierda: texto -->
-  <div class="capitalize flex-1">
-    <p class="text-sm font-semibold text-gray-600 mb-1 dark:text-white">
-      Fecha actual: {{ currentYear }}/{{ currentMonth }}
-    </p>
-    <h6 class="tracking-normal text-base font-semibold leading-relaxed text-gray-900 dark:text-white">
-      Organiza tus Deberes con Claridad
-    </h6>
+
+  <!-- Columna izquierda: logo + texto -->
+  <div class="capitalize flex-1 flex items-center gap-3">
+    <img [src]="isDarkMode ? 'assets/img/logoB.png' : 'assets/img/logo.png'" alt="Kronely Task Logo"
+      class="h-20 w-20 transition duration-300" />
+    <div>
+      <p class="text-sm font-semibold text-gray-600 mb-1 dark:text-white">
+        Fecha actual: {{ currentYear }}/{{ currentMonth }}
+      </p>
+      <h6 class="tracking-normal text-base font-semibold leading-relaxed text-gray-900 dark:text-white">
+        Organiza tus Deberes con Claridad
+      </h6>
+    </div>
   </div>
 
   <!-- Columna derecha: botones -->

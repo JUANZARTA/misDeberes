@@ -71,7 +71,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private taskService: TaskService // <--- agregado
   ) {}
 
-  @HostListener('document:click', ['$event'])
 
   // Metodo para inicializar el componente
   ngOnInit(): void {
@@ -202,6 +201,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   // Metodo para cerrar el modal de selección de mes
+  @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent): void {
     const target = event.target as HTMLElement;
 
