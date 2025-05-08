@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { AuthService } from './services/auth.service'; // Ajusta ruta si es distinta
+import { RouterOutlet, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -10,13 +9,17 @@ import { AuthService } from './services/auth.service'; // Ajusta ruta si es dist
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-  title = 'ng-menu-dashboard';
+  title = 'Mis Deberes';
 
-  constructor(private authService: AuthService) {}
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
-    if (this.authService.isLoggedIn()) {
-      this.authService.startAutoLogout();
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect');
+    if (redirect) {
+      window.history.replaceState({}, '', redirect);
+      this.router.navigateByUrl(redirect);
     }
   }
+
 }

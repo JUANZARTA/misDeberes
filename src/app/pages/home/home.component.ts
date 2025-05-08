@@ -1,21 +1,29 @@
-// Home para visualizar, crear, editar y eliminar tipos de tarea
-import { Component } from '@angular/core';
+import {Component,OnInit,OnDestroy,Inject,PLATFORM_ID,} from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription, forkJoin } from 'rxjs';
+
 import { TaskTypeService } from '../../services/taskType.service';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task.model';
+
+import { FormsModule } from '@angular/forms';
 import { DateService } from '../../services/date.service';
+import { AuthService } from '../../services/auth.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  templateUrl: './home.component.html',
-  styleUrls: [],
   imports: [CommonModule, FormsModule],
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css'],
 })
-export class HomeComponent {
+export default class HomeComponent implements OnInit, OnDestroy {
+  // Subscripción
+  private dateSubscription: Subscription | undefined;
+  private authService = inject(AuthService);
+
   // Lista de tipos de tareas
   taskTypes: { key: string; nombre: string }[] = [];
 
@@ -47,26 +55,28 @@ export class HomeComponent {
 
   // Carga inicial de tipos al entrar al componente
   ngOnInit(): void {
-    console.log('[INIT] Home cargado');
-
-    // 🔁 Carga inicial
+    // Carga inicial
     this.loadTaskTypes();
     this.loadTodayTasks();
 
-    // 🔁 Escuchar cambios de mes o año
+    // Escuchar cambios de mes o año
     this.dateService.selectedDate$.subscribe(() => {
       this.loadTaskTypes();     // Actualiza cuando cambia mes/año
       this.loadTodayTasks();    // También el resumen
     });
+
     this.dateService.selectedDate$.subscribe((fecha) => {
       console.log('[OBS] Fecha detectada:', fecha);
       this.loadTaskTypes();
       this.loadTodayTasks();
     });
+    this.authService.startAutoLogout();
 
   }
 
-
+  ngOnDestroy(): void {
+    this.dateSubscription?.unsubscribe();
+  }
   // Consulta todos los tipos de tareas existentes
   loadTaskTypes(): void {
     this.taskTypeService.getAllTaskTypes().subscribe({
