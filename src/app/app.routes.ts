@@ -21,7 +21,6 @@ export const routes: Routes = [
     children: [
       { path: 'home', loadComponent: () => import('./pages/home/home.component') },
       { path: 'category/:name', loadComponent: () => import('./pages/category/category.component').then(m => m.CategoryComponent) },
-      { path: 'tasks', loadComponent: () => import('./pages/tasks/tasks.component').then(m => m.TasksComponent) },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
