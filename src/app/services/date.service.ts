@@ -11,6 +11,7 @@ export class DateService {
   private monthSubject: BehaviorSubject<string>;
   private isBrowser: boolean;
 
+  // constructor
   constructor(
     @Inject(PLATFORM_ID) platformId: Object,
     private http: HttpClient // ✅ nuevo
@@ -42,6 +43,9 @@ export class DateService {
     }
   }
 
+  // ===================
+  // Getters y Setters
+  // ===================
   get selectedYear$() {
     return this.yearSubject.asObservable();
   }
@@ -75,6 +79,7 @@ export class DateService {
     return this.monthSubject.value;
   }
 
+  // método: Obtener el primer día del mes
   resetToCurrentDate(): void {
     const now = new Date();
     const year = now.getFullYear().toString();
